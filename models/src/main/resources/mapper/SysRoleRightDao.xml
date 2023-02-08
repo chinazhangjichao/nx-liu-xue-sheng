@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.SysRoleRightDao">
+
+	<resultMap type="SysRoleRight" id="SysRoleRightMap">
+		<id property="rrId" column="rr_id" />
+		<result property="rrRole" column="rr_role" />
+		<association property="rrFun" column="rr_fun" javaType="SysFunction">
+			<id property="funId" column="fun_id" />
+			<result property="funName" column="fun_name" />
+			<result property="funUrl" column="fun_url" />
+		</association>
+	</resultMap>
+
+
+
+	<select id="queryByRole" resultMap="SysRoleRightMap">
+		select rr.*,f.fun_id,f.fun_name,f.fun_url
+		from sys_role_right rr
+		inner join sys_function f on rr.rr_fun =f.fun_id
+		where rr.rr_role=#{roleId}
+	</select>
+	<select id="queryByRoles" resultType="String">
+		select DISTINCT f.fun_url
+		from sys_role_right rr
+		inner join sys_function f on rr.rr_fun =f.fun_id
+		where rr.rr_role in (<foreach collection="roleIds" item="id" separator=",">#{id}</foreach>)
+	</select>
+
+	<insert id="saveList">
+		insert into sys_role_right(rr_role,rr_fun)
+		values <foreach collection="objList" item="obj" separator=",">(#{obj.rrRole},#{obj.rrFun.funId})</foreach>
+	</insert>
+
+	<delete id="deleteByRole">
+		delete from sys_role_right
+		where rr_role=#{roleId}
+	</delete>
+</mapper>

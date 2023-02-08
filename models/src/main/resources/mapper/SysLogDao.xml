@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.SysLogDao">
+
+	<resultMap type="SysLog" id="SysLogMap">
+		<id property="logId" column="log_id" />
+		<result property="logTime" column="log_time" />
+		<result property="logContent" column="log_content" />
+		<result property="logUser" column="log_user" />
+		<result property="logModule" column="log_module" />
+		<result property="system" column="system" />
+		<result property="browser" column="browser" />
+		<result property="controllerMethod" column="controller_method" />
+		<result property="requestMethod" column="request_method" />
+		<result property="requestParams" column="request_params" />
+		<result property="logFlag" column="log_flag" />
+		<result property="exception" column="exception" />
+	</resultMap>
+
+
+	<select id="queryCount" resultType="int">
+		select count(log_id) from sys_log
+		<trim prefix="where" prefixOverrides="and">
+			<if test="null!=status and status!=-1">and log_flag=#{status}</if>
+			<if test="null!=startTime and startTime>0">and log_time>=#{startTime}</if>
+			<if test="null!=endTime and endTime>0">and log_time&lt;=#{endTime}</if>
+			<if test="null!=user and ''!=user">and log_user like CONCAT('%',#{user},'%')</if>
+			<if test="null!=module and ''!=module">and log_module like CONCAT('%',#{module},'%')</if>
+			<if test="null!=content and ''!=content">and log_content like CONCAT('%',#{content},'%')</if>
+		</trim>
+	</select>
+	<select id="queryByPage" resultMap="SysLogMap">
+		select * from sys_log
+		<trim prefix="where" prefixOverrides="and">
+			<if test="null!=status and status!=-1">and log_flag=#{status}</if>
+			<if test="null!=startTime and startTime>0">and log_time>=#{startTime}</if>
+			<if test="null!=endTime and endTime>0">and log_time&lt;=#{endTime}</if>
+			<if test="null!=user and ''!=user">and log_user like CONCAT('%',#{user},'%')</if>
+			<if test="null!=module and ''!=module">and log_module like CONCAT('%',#{module},'%')</if>
+			<if test="null!=content and ''!=content">and log_content like CONCAT('%',#{content},'%')</if>
+		</trim>
+		order by log_id desc
+		limit #{start},#{pageSize}
+	</select>
+	<select id="queryById" resultMap="SysLogMap">
+		select * from sys_log
+		where log_id=#{id}
+	</select>
+	<insert id="save">
+		insert into sys_log(log_content,log_time,log_user,log_ip,log_module,system,browser,request_method,request_params,controller_method,`exception`,log_flag)
+		values (#{logContent},#{logTime},#{logUser},#{logIp},#{logModule},#{system},#{browser},#{requestMethod},#{requestParams},#{controllerMethod},#{exception},#{logFlag})
+	</insert>
+	<delete id="delete">
+		delete from sys_log
+		where log_id=#{id}
+	</delete>
+	<delete id="deleteMulti">
+		delete from sys_log
+		where log_id in  <foreach collection="ids" item="id" open="(" close=")" separator=",">#{id}</foreach>
+	</delete>
+</mapper>

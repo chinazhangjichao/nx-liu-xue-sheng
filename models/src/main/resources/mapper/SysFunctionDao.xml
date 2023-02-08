@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.SysFunctionDao">
+
+    <resultMap type="SysFunction" id="SysFunctionMap">
+        <id property="funId" column="fun_id" />
+        <result property="funName" column="fun_name" />
+        <result property="funUrl" column="fun_url" />
+        <result property="funParent" column="fun_parent" />
+        <result property="funLevel" column="fun_level" />
+    </resultMap>
+
+    <select id="queryAll" resultMap="SysFunctionMap">
+		select * from sys_function
+	</select>
+
+    <select id="queryByIds" resultMap="SysFunctionMap">
+        select * from sys_function
+        where fun_id in <foreach collection="ids" item="id" open="(" close=")" separator=",">#{id}</foreach>
+    </select>
+</mapper>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.ArticleTypeDao">
+	<resultMap type="ArticleType" id="ArticleTypeMap">
+		<id property="typeId" column="type_id"/>
+		<result property="typeNo" column="type_no"/>
+		<result property="sortNum" column="sort_num"/>
+		<result property="typeName" column="type_name"/>
+		<result property="typeEnglish" column="type_english"/>
+        <result property="typeImg" column="type_img"/>
+        <result property="typeDesc" column="type_desc"/>
+        <association property="typeParent" column="type_parent" javaType="ArticleType">
+            <id property="typeId" column="parent_id"/>
+			<result property="typeNo" column="parent_no"/>
+			<result property="typeName" column="parent_name"/>
+        </association>
+	</resultMap>
+
+	<sql id="select">
+		select at.*,pt.type_id parent_id,pt.type_no parent_no,pt.type_name parent_name
+		from tbl_article_type at 
+		left join tbl_article_type pt on at.type_parent=pt.type_id
+	</sql>
+		
+	<select id="queryByParent" resultMap="ArticleTypeMap">
+		<include refid="select"></include>
+		where at.type_parent=#{parent}
+		order by sort_num DESC
+	</select>
+	
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="ArticleTypeMap">
+		<include refid="select"></include>
+		where at.type_id=#{id}
+	</select>
+	<select id="queryByNo" resultMap="ArticleTypeMap">
+		<include refid="select"></include>
+		where at.type_no=#{typeNo}
+	</select>
+
+	<!-- 保存 -->
+	<insert id="save" useGeneratedKeys="true"  keyProperty="typeId">
+		insert into tbl_article_type
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=sortNum">sort_num,</if>
+			<if test="null!=typeNo">type_no,</if>
+			<if test="null!=typeName">type_name,</if>
+			<if test="null!=typeEnglish">type_english,</if>
+			<if test="null!=typeParent">type_parent,</if>
+			<if test="null!=typeDesc">type_desc,</if>
+			<if test="null!=typeImg">type_img,</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=sortNum">#{sortNum},</if>
+			<if test="null!=typeNo">#{typeNo},</if>
+			<if test="null!=typeName">#{typeName},</if>
+			<if test="null!=typeEnglish">#{typeEnglish},</if>
+			<if test="null!=typeParent">#{typeParent.typeId},</if>
+			<if test="null!=typeDesc">#{typeDesc},</if>
+			<if test="null!=typeImg">#{typeImg},</if>
+		</trim>
+	</insert>
+	<!-- 修改 -->
+	<update id="update">
+		update tbl_article_type
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=sortNum">sort_num=#{sortNum},</if>
+			<if test="null!=typeNo">type_no=#{typeNo},</if>
+			<if test="null!=typeName">type_name=#{typeName},</if>
+			<if test="null!=typeEnglish">type_english=#{typeEnglish},</if>
+			<if test="null!=typeParent">type_parent=#{typeParent.typeId},</if>
+			<if test="null!=typeDesc">type_desc=#{typeDesc},</if>
+			<if test="null!=typeImg">type_img=#{typeImg},</if>
+		</trim>
+		where type_id=#{typeId}
+	</update>
+	<!-- 删除 -->
+	<delete id="delete">
+		delete from tbl_article_type where type_id=#{id}
+	</delete>
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.MenuDao">
+	<resultMap type="Menu" id="MenuMap">
+		<id property="menuId" column="menu_id"/>
+		<result property="sortNum" column="sort_num"/>
+		<result property="menuName" column="menu_name"/>
+		<result property="menuEnglish" column="menu_english"/>
+        <result property="menuIcon" column="menu_icon"/>
+		<result property="menuUrl" column="menu_url"/>
+		<result property="isMobile" column="is_mobile"/>
+        <association property="menuParent" column="menu_parent" javaType="Menu">
+            <id property="menuId" column="parent_id"/>
+			<result property="menuName" column="parent_name"/>
+        </association>
+	</resultMap>
+
+	<sql id="select">
+		select m.*,pm.menu_id parent_id,pm.menu_name parent_name
+		from tbl_menu m
+		left join tbl_menu pm on m.menu_parent=pm.menu_id
+	</sql>
+
+	<select id="queryByParent" resultMap="MenuMap">
+		<include refid="select"></include>
+		where m.menu_parent=#{parent}
+		order by sort_num ASC
+	</select>
+
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="MenuMap">
+		<include refid="select"></include>
+		where m.menu_id=#{id}
+	</select>
+
+	<!-- 保存 -->
+	<insert id="save" useGeneratedKeys="true"  keyProperty="menuId">
+		insert into tbl_menu
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=sortNum">sort_num,</if>
+			<if test="null!=menuName">menu_name,</if>
+			<if test="null!=menuEnglish">menu_english,</if>
+			<if test="null!=menuParent">menu_parent,</if>
+			<if test="null!=menuUrl">menu_url,</if>
+			<if test="null!=menuIcon">menu_icon,</if>
+			<if test="null!=isMobile">is_mobile,</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=sortNum">#{sortNum},</if>
+			<if test="null!=menuName">#{menuName},</if>
+			<if test="null!=menuEnglish">#{menuEnglish},</if>
+			<if test="null!=menuParent">#{menuParent.menuId},</if>
+			<if test="null!=menuUrl">#{menuUrl},</if>
+			<if test="null!=menuIcon">#{menuIcon},</if>
+			<if test="null!=isMobile">#{isMobile},</if>
+		</trim>
+	</insert>
+	<!-- 修改 -->
+	<update id="update">
+		update tbl_menu
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=sortNum">sort_num=#{sortNum},</if>
+			<if test="null!=menuName">menu_name=#{menuName},</if>
+			<if test="null!=menuEnglish">menu_english=#{menuEnglish},</if>
+			<if test="null!=menuParent">menu_parent=#{menuParent.menuId},</if>
+			<if test="null!=menuUrl">menu_url=#{menuUrl},</if>
+			<if test="null!=menuIcon">menu_icon=#{menuIcon},</if>
+			<if test="null!=isMobile">is_mobile=#{isMobile},</if>
+		</trim>
+		where menu_id=#{menuId}
+	</update>
+	<!-- 删除 -->
+	<delete id="delete">
+		delete from tbl_menu where menu_id=#{id}
+	</delete>
+</mapper>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.QuestionDao">
+
+	<resultMap type="Question" id="QuestionMap">
+		<id property="id" column="id"/>
+		<result property="name" column="name"/>
+		<result property="img" column="img"/>
+		<result property="option1" column="option1"/>
+		<result property="option2" column="option2"/>
+		<result property="option3" column="option3"/>
+		<result property="option4" column="option4"/>
+		<result property="option5" column="option5"/>
+		<result property="option6" column="option6"/>
+		<result property="answer" column="answer"/>
+		<result property="analysis" column="analysis"/>
+		<result property="score" column="score"/>
+		<result property="type" column="type"/>
+		<result property="isExam" column="is_exam"/>
+		<result property="isTest" column="is_test"/>
+		<result property="modifyTime" column="modify_time"/>
+		<association property="modifyUser" column="modify_user" javaType="SysUser">
+			<id property="userId" column="modify_user" />
+			<result property="realName" column="real_name" />
+		</association>
+		<association property="course" column="course" javaType="CourseInfor">
+			<id property="courseId" column="course" />
+			<result property="courseName" column="course_name" />
+		</association>
+	</resultMap>
+
+	<sql id="select">
+		select q.*,u.real_name
+		from tbl_question q
+		inner join tbl_course_infor c on q.course = c.course_id
+		inner join sys_user u on q.modify_user = u.user_id
+	</sql>
+	<select id="queryByPage" resultMap="QuestionMap">
+		<include refid="select"></include>
+		<where>
+			<if test="null!=course and course>0"> and course=#{course}</if>
+			<if test="null!=type and type>0"> and type=#{type}</if>
+			<if test="null!=exam and exam!=-1"> and is_exam=#{exam}</if>
+			<if test="null!=test and test!=-1"> and is_test=#{test}</if>
+			<if test="null!=name and name!=''"> and q.`name` like CONCAT('%',#{name},'%')</if>
+		</where>
+		order by sort_num
+	</select>
+	<select id="queryCount" resultType="int">
+		select count(1)
+		from tbl_question q
+		inner join tbl_course_infor c on q.course = c.course_id
+		inner join sys_user u on q.modify_user = u.user_id
+		<where>
+			<if test="null!=course and course>0"> and course=#{course}</if>
+			<if test="null!=type and type>0"> and type=#{type}</if>
+			<if test="null!=exam and exam!=-1"> and is_exam=#{exam}</if>
+			<if test="null!=test and test!=-1"> and is_test=#{test}</if>
+			<if test="null!=name and name!=''"> and q.`name` like CONCAT('%',#{name},'%')</if>
+		</where>
+	</select>
+	<select id="queryById" resultMap="QuestionMap">
+		<include refid="select"></include>
+		where q.id=#{id}
+	</select>
+
+	<insert id="save" useGeneratedKeys="true" keyProperty="id">
+		insert into tbl_question
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=course">`course`,</if>
+			<if test="null!=name">`name`,</if>
+			<if test="null!=img">img,</if>
+			<if test="null!=option1">option1,</if>
+			<if test="null!=option2">option2,</if>
+			<if test="null!=option3">option3,</if>
+			<if test="null!=option4">option4,</if>
+			<if test="null!=option5">option5,</if>
+			<if test="null!=option6">option6,</if>
+			<if test="null!=answer">answer,</if>
+			<if test="null!=analysis">analysis,</if>
+			<if test="null!=type">`type`,</if>
+			<if test="null!=score">score,</if>
+			<if test="null!=isExam">is_exam,</if>
+			<if test="null!=isTest">is_test,</if>
+			<if test="null!=modifyUser">modify_user,</if>
+			<if test="null!=modifyTime">modify_time,</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=course">#{course.courseId},</if>
+			<if test="null!=name">#{name},</if>
+			<if test="null!=img">#{img},</if>
+			<if test="null!=option1">#{option1},</if>
+			<if test="null!=option2">#{option2},</if>
+			<if test="null!=option3">#{option3},</if>
+			<if test="null!=option4">#{option4},</if>
+			<if test="null!=option5">#{option5},</if>
+			<if test="null!=option6">#{option6},</if>
+			<if test="null!=answer">#{answer},</if>
+			<if test="null!=analysis">#{analysis},</if>
+			<if test="null!=type">#{type},</if>
+			<if test="null!=score">#{score},</if>
+			<if test="null!=isExam">#{isExam},</if>
+			<if test="null!=isTest">#{isTest},</if>
+			<if test="null!=modifyUser">#{modifyUser.userId},</if>
+			<if test="null!=modifyTime">#{modifyTime},</if>
+		</trim>
+	</insert>
+	<insert id="saveList">
+		INSERT  INTO  tbl_question(`course`,`name`,`option1`,`option2`,`option3`,`option4`,`option5`,`option6`,`answer`,`analysis`,`type`,`score`,`is_exam`,`is_test`,`modify_time`,`modify_user`)
+		VALUES
+		<foreach collection="objList" item="obj" separator=",">
+			(#{obj.course.courseId},#{obj.name},#{obj.option1},#{obj.option2},#{obj.option3},#{obj.option4},#{obj.option5},#{obj.option6},#{obj.answer},#{obj.analysis},#{obj.type},#{obj.score},#{obj.isExam},#{obj.isTest},#{obj.modifyTime},#{obj.modifyUser})
+		</foreach>
+	</insert>
+	<update id="update">
+		update tbl_question
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=course">`course`=#{course.courseId},</if>
+			<if test="null!=name">`name`=#{name},</if>
+			<if test="null!=img">img=#{img},</if>
+			<if test="null!=option1">option1=#{option1},</if>
+			<if test="null!=option2">option2=#{option2},</if>
+			<if test="null!=option3">option3=#{option3},</if>
+			<if test="null!=option4">option4=#{option4},</if>
+			<if test="null!=option5">option5=#{option5},</if>
+			<if test="null!=option6">option6=#{option6},</if>
+			<if test="null!=answer">answer=#{answer},</if>
+			<if test="null!=analysis">analysis=#{analysis},</if>
+			<if test="null!=type">`type`=#{type},</if>
+			<if test="null!=score">score=#{score},</if>
+			<if test="null!=isExam">is_exam=#{isExam},</if>
+			<if test="null!=isTest">is_test=#{isTest},</if>
+			<if test="null!=modifyUser">modify_user=#{modifyUser.userId},</if>
+			<if test="null!=modifyTime">modify_time=#{modifyTime},</if>
+		</trim>
+		where id=#{id}
+	</update>
+	<delete id="delete">
+		delete from tbl_question
+		where id=#{id}
+	</delete>
+	<delete id="deleteByCourse">
+		delete from tbl_question
+		where course=#{courseId}
+	</delete>
+</mapper>

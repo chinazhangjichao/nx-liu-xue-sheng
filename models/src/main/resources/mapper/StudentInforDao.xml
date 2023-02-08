@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.StudentInforDao">
+
+	<resultMap type="StudentInfor" id="StudentInforMap">
+		<id property="stuId" column="stu_id"/>
+		<result property="stuNo" column="stu_no"/>
+		<result property="firstName" column="first_name"/>
+		<result property="lastName" column="last_name"/>
+		<result property="chineseName" column="chinese_name"/>
+		<result property="stuImg" column="stu_img"/>
+		<result property="stuPwd" column="stu_pwd"/>
+		<result property="stuStatus" column="stu_status"/>
+		<result property="stuVerify" column="stu_verify"/>
+		<result property="stuType" column="stu_type"/>
+		<result property="gender" column="gender"/>
+		<result property="birth" column="birth"/>
+		<result property="country" column="country"/>
+		<result property="email" column="email"/>
+		<result property="address" column="address"/>
+		<result property="phone" column="phone"/>
+		<result property="certificateType" column="certificate_type"/>
+		<result property="certificateNo" column="certificate_no"/>
+		<result property="verifyTime" column="verify_time"/>
+		<result property="verifyIp" column="verify_ip"/>
+		<result property="verifyRemark" column="verify_remark"/>
+		<result property="createTime" column="create_time"/>
+		<result property="createIp" column="create_ip"/>
+		<result property="loginTime" column="login_time"/>
+		<result property="loginIp" column="login_ip"/>
+		<result property="modifyTime" column="modify_time"/>
+		<result property="modifyIp" column="modify_ip"/>
+		<association property="verifyUser" column="verify_user" javaType="SysUser">
+			<id property="userId" column="verify_user" />
+			<result property="realName" column="user_name" />
+		</association>
+	</resultMap>
+
+	<sql id="select">
+		select stu.*,u.real_name user_name
+		from tbl_student_infor stu
+		left join sys_user u on stu.verify_user = u.user_id
+	</sql>
+	<select id="queryByPage" resultMap="StudentInforMap">
+		<include refid="select"></include>
+		<where>
+			<if test="null!=stuNo and stuNo>0"> and stu_no=#{stuNo}</if>
+			<if test="null!=verifyStatus and verifyStatus!=-1"> and verify_status=#{verifyStatus}</if>
+			<if test="null!=status and status!=-1"> and stu_status=#{status}</if>
+			<if test="null!=type and type>0"> and stu_type=#{type}</if>
+			<choose>
+				<when test="timeType==1">
+					<if test="null!=startTime and startTime>0"> and create_time>=#{startTime}</if>
+					<if test="null!=endTime and endTime>0"> and create_time&lt;=#{endTime}</if>
+				</when>
+				<when test="timeType==2">
+					<if test="null!=startTime and startTime>0"> and verify_time>=#{startTime}</if>
+					<if test="null!=endTime and endTime>0"> and verify_time&lt;=#{endTime}</if>
+				</when>
+				<when test="timeType==3">
+					<if test="null!=startTime and startTime>0"> and login_time>=#{startTime}</if>
+					<if test="null!=endTime and endTime>0"> and login_time&lt;=#{endTime}</if>
+				</when>
+			</choose>
+			<if test="null!=firstName and firstName!=''"> and stu.first_name like CONCAT('%',#{firstName},'%')</if>
+			<if test="null!=lastName and lastName!=''"> and stu.last_name like CONCAT('%',#{lastName},'%')</if>
+			<if test="null!=name and name!=''"> and stu.chinese_name like CONCAT('%',#{name},'%')</if>
+		</where>
+		order by stu_id DESC
+	</select>
+	<select id="queryCount" resultType="int">
+		select count(1)
+		from tbl_student_infor stu
+		left join sys_user u on stu.verify_user = u.user_id
+		<where>
+			<if test="null!=stuNo and stuNo>0"> and stu_no=#{stuNo}</if>
+			<if test="null!=verifyStatus and verifyStatus!=-1"> and verify_status=#{verifyStatus}</if>
+			<if test="null!=status and status!=-1"> and stu_status=#{status}</if>
+			<if test="null!=type and type>0"> and stu_type=#{type}</if>
+			<choose>
+				<when test="timeType==1">
+					<if test="null!=startTime and startTime>0"> and create_time>=#{startTime}</if>
+					<if test="null!=endTime and endTime>0"> and create_time&lt;=#{endTime}</if>
+				</when>
+				<when test="timeType==2">
+					<if test="null!=startTime and startTime>0"> and verify_time>=#{startTime}</if>
+					<if test="null!=endTime and endTime>0"> and verify_time&lt;=#{endTime}</if>
+				</when>
+				<when test="timeType==3">
+					<if test="null!=startTime and startTime>0"> and login_time>=#{startTime}</if>
+					<if test="null!=endTime and endTime>0"> and login_time&lt;=#{endTime}</if>
+				</when>
+			</choose>
+			<if test="null!=firstName and firstName!=''"> and stu.first_name like CONCAT('%',#{firstName},'%')</if>
+			<if test="null!=lastName and lastName!=''"> and stu.last_name like CONCAT('%',#{lastName},'%')</if>
+			<if test="null!=name and name!=''"> and stu.chinese_name like CONCAT('%',#{name},'%')</if>
+		</where>
+	</select>
+	<select id="queryById" resultMap="StudentInforMap">
+		<include refid="select"></include>
+		where stu_id=#{id}
+	</select>
+
+	<select id="queryByNo" resultMap="StudentInforMap">
+		<include refid="select"></include>
+		where stu_no=#{no}
+	</select>
+	<select id="queryLatest" resultType="long">
+		select stu_no
+		from tbl_student_infor
+		order by stu_id DESC
+	</select>
+
+	<insert id="save" useGeneratedKeys="true" keyProperty="stuId">
+		insert into tbl_student_infor
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=stuNo">stu_no,</if>
+			<if test="null!=firstName">first_name,</if>
+			<if test="null!=lastName">last_name,</if>
+			<if test="null!=chineseName">chinese_name,</if>
+			<if test="null!=email">email,</if>
+			<if test="null!=country">country,</if>
+			<if test="null!=stuImg">stu_img,</if>
+			<if test="null!=stuPwd">stu_pwd,</if>
+			<if test="null!=stuStatus">stu_status,</if>
+			<if test="null!=stuType">stu_type,</if>
+			<if test="null!=stuVerify">stu_verify,</if>
+			<if test="null!=gender">gender,</if>
+			<if test="null!=birth">birth,</if>
+			<if test="null!=phone">phone,</if>
+			<if test="null!=address">address,</if>
+			<if test="null!=certificateType">certificate_type,</if>
+			<if test="null!=certificateNo">certificate_no,</if>
+			<if test="null!=verifyTime">verify_time,</if>
+			<if test="null!=verifyUser">verify_user,</if>
+			<if test="null!=verifyIp">verify_ip,</if>
+			<if test="null!=verifyRemark">verify_remark,</if>
+			<if test="null!=createIp">create_ip,</if>
+			<if test="null!=createTime">create_time,</if>
+			<if test="null!=loginIp">login_ip,</if>
+			<if test="null!=loginTime">login_time,</if>
+			<if test="null!=modifyIp">modify_ip,</if>
+			<if test="null!=modifyTime">modify_time,</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=stuNo">#{stuNo},</if>
+			<if test="null!=firstName">#{firstName},</if>
+			<if test="null!=lastName">#{lastName},</if>
+			<if test="null!=chineseName">#{chineseName},</if>
+			<if test="null!=email">#{email},</if>
+			<if test="null!=country">#{country},</if>
+			<if test="null!=stuImg">#{stuImg},</if>
+			<if test="null!=stuPwd">#{stuPwd},</if>
+			<if test="null!=stuStatus">#{stuStatus},</if>
+			<if test="null!=stuType">#{stuType},</if>
+			<if test="null!=stuVerify">#{stuVerify},</if>
+			<if test="null!=gender">#{gender},</if>
+			<if test="null!=birth">#{birth},</if>
+			<if test="null!=phone">#{phone},</if>
+			<if test="null!=address">#{address},</if>
+			<if test="null!=certificateType">#{certificateType},</if>
+			<if test="null!=certificateNo">#{certificateNo},</if>
+			<if test="null!=verifyTime">#{verifyTime},</if>
+			<if test="null!=verifyUser">#{verifyUser.userId},</if>
+			<if test="null!=verifyIp">#{verifyIp},</if>
+			<if test="null!=verifyRemark">#{verifyRemark},</if>
+			<if test="null!=createIp">#{createIp},</if>
+			<if test="null!=createTime">#{createTime},</if>
+			<if test="null!=loginIp">#{loginIp},</if>
+			<if test="null!=loginTime">#{loginTime},</if>
+			<if test="null!=modifyIp">#{modifyIp},</if>
+			<if test="null!=modifyTime">#{modifyTime},</if>
+		</trim>
+	</insert>
+	<update id="update">
+		update tbl_student_infor
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=stuNo">stu_no=#{stuNo},</if>
+			<if test="null!=firstName">first_name=#{firstName},</if>
+			<if test="null!=lastName">last_name=#{lastName},</if>
+			<if test="null!=chineseName">chinese_name=#{chineseName},</if>
+			<if test="null!=email">email=#{email},</if>
+			<if test="null!=country">country=#{country},</if>
+			<if test="null!=stuImg">stu_img=#{stuImg},</if>
+			<if test="null!=stuPwd">stu_pwd=#{stuPwd},</if>
+			<if test="null!=stuStatus">stu_status=#{stuStatus},</if>
+			<if test="null!=stuType">stu_type=#{stuType},</if>
+			<if test="null!=stuVerify">stu_verify=#{stuVerify},</if>
+			<if test="null!=gender">gender=#{gender},</if>
+			<if test="null!=birth">birth=#{birth},</if>
+			<if test="null!=phone">phone=#{phone},</if>
+			<if test="null!=address">address=#{address},</if>
+			<if test="null!=certificateType">certificate_type=#{certificateType},</if>
+			<if test="null!=certificateNo">certificate_no=#{certificateNo},</if>
+			<if test="null!=verifyTime">verify_time=#{verifyTime},</if>
+			<if test="null!=verifyUser">verify_user=#{verifyUser.userId},</if>
+			<if test="null!=verifyIp">verify_ip=#{verifyIp},</if>
+			<if test="null!=verifyRemark">verify_remark=#{verifyRemark},</if>
+			<if test="null!=createIp">create_ip=#{createIp},</if>
+			<if test="null!=createTime">create_time=#{createTime},</if>
+			<if test="null!=loginIp">login_ip=#{loginIp},</if>
+			<if test="null!=loginTime">login_time=#{loginTime},</if>
+			<if test="null!=modifyIp">modify_ip=#{modifyIp},</if>
+			<if test="null!=modifyTime">modify_time=#{modifyTime},</if>
+		</trim>
+		where stu_id=#{stuId}
+	</update>
+	<delete id="delete">
+		delete from tbl_student_infor
+		where stu_id=#{id}
+	</delete>
+</mapper>

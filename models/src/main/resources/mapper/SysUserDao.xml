@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.SysUserDao">
+
+	<resultMap type="SysUser" id="userMap">
+		<id property="userId" column="user_id" />
+		<result property="userName" column="user_name" />
+		<result property="userPwd" column="user_pwd" />
+		<result property="userPhone" column="user_phone" />
+		<result property="realName" column="real_name" />
+		<result property="userSex" column="user_sex" />
+		<result property="headImg" column="head_img" />
+		<result property="userStatus" column="user_status" />
+		<result property="userRemark" column="user_remark" />
+		<result property="loginTime" column="login_time" />
+		<result property="logoutTime" column="logout_time" />
+		<result property="loginIp" column="login_ip" />
+		<result property="loginNum" column="login_num" />
+		<result property="createTime" column="create_time" />
+		<result property="modifyTime" column="modify_time" />
+		<result property="modifyUser" column="modify_user" />
+
+	</resultMap>
+
+	<sql id="selectAll">
+		select u.*
+		from sys_user u
+	</sql>
+
+	<select id="queryCount" resultType="int">
+		select count(user_id)
+		from sys_user u
+		<trim prefix="where" prefixOverrides="and">
+			<if test="null!=status and -1!=status"> and user_status= #{status} </if>
+			<if test="null!=name and ''!=name"> and (user_name like CONCAT('%', #{name},'%') or real_name like CONCAT('%', #{name},'%') )</if>
+		</trim>
+	</select>
+	<select id="queryByPage" resultMap="userMap">
+		<include refid="selectAll"></include>
+		<trim prefix="where" prefixOverrides="and">
+			<if test="null!=status and -1!=status"> and user_status= #{status} </if>
+			<if test="null!=name and ''!=name"> and (user_name like CONCAT('%', #{name},'%') or real_name like CONCAT('%', #{name},'%') )</if>
+		</trim>
+		order by user_id DESC
+		limit #{start},#{pageSize}
+	</select>
+
+	<select id="queryByCreateTime" resultType="SysUser">
+		select * from sys_user
+		where create_time = #{createTime} and user_labour is not NULL
+	</select>
+
+	<select id="queryById" resultMap="userMap">
+		<include refid="selectAll"></include>
+		where user_id = #{id}
+	</select>
+
+	<select id="queryByName" resultMap="userMap">
+		<include refid="selectAll"></include>
+		where user_name = #{name}
+	</select>
+
+	<insert id="save">
+		insert into sys_user(user_name,user_pwd,real_name,user_phone,login_time,login_ip,login_num,user_status,user_remark,create_time)
+		values (#{userName},#{userPwd},#{realName},#{userPhone},#{loginTime},#{loginIp},#{loginNum},#{userStatus},#{userRemark},#{createTime})
+	</insert>
+
+	<insert id="saveList">
+		insert into sys_user(user_name,user_pwd,real_name,login_time,login_num,user_status,create_time)
+		values
+		<foreach collection="objList" item="obj" separator=",">
+			(#{obj.userName},#{obj.userPwd},#{obj.realName},#{obj.loginTime},#{obj.loginNum},#{obj.userStatus},#{obj.createTime})
+		</foreach>
+	</insert>
+	<update id="update">
+		update sys_user
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=userName">user_name = #{userName},</if>
+			<if test="null!=userPwd">user_pwd = #{userPwd},</if>
+			<if test="null!=realName">real_name= #{realName},</if>
+			<if test="null!=userSex">user_sex= #{userSex},</if>
+			<if test="null!=userPhone">user_phone= #{userPhone},</if>
+			<if test="null!=headImg">head_img= #{headImg},</if>
+			<if test="null!=modifyTime">modify_time= #{modifyTime},</if>
+			<if test="null!=userRemark">user_remark= #{userRemark},</if>
+			<if test="null!=userStatus">user_status= #{userStatus},</if>
+		</trim>
+		where user_id=#{userId}
+	</update>
+
+	<update id="updateLogin">
+		update sys_user
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=loginTime">login_time= #{loginTime},</if>
+			<if test="null!=loginIp">login_ip= #{loginIp},</if>
+			<if test="null!=loginNum">login_num= #{loginNum},</if>
+		</trim>
+		where user_id=#{userId}
+	</update>
+
+	<update id="updateOffline">
+		update sys_user
+		set logout_time= #{logoutTime}
+		where user_id=#{userId}
+	</update>
+
+	<update id="updatePwd">
+		update sys_user
+		set userPwd=#{userPwd}
+		where user_id in
+		<foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+	<delete id="delete">
+		delete from sys_user
+		where user_id=#{id}
+	</delete>
+</mapper>

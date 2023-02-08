@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.SysRoleDao">
+
+	<resultMap type="SysRole" id="SysRoleMap">
+		<id property="roleId" column="role_id" />
+		<result property="roleName" column="role_name" />
+		<result property="roleDesc" column="role_desc" />
+	</resultMap>
+
+	<select id="queryAll" resultMap="SysRoleMap">
+		select * from sys_role
+	</select>
+
+	<select id="queryById" resultMap="SysRoleMap">
+		select * from sys_role
+		where role_id=#{id}
+	</select>
+
+	<select id="queryByName" resultMap="SysRoleMap">
+		select * from sys_role
+		where role_name=#{name}
+	</select>
+
+	<insert id="save">
+		insert into sys_role(role_name,role_desc)
+		values(#{roleName},#{roleDesc})
+	</insert>
+
+	<update id="update">
+		update sys_role
+		<set>
+			<if test="null!=roleName">role_name= #{roleName},</if>
+			<if test="null!=roleDesc">role_desc= #{roleDesc},</if>
+		</set>
+		where role_id=#{roleId}
+	</update>
+	<delete id="delete">
+		delete from sys_role
+		where role_id=#{roleId}
+	</delete>
+</mapper>

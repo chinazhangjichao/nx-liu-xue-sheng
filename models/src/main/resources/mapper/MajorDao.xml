@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.MajorDao">
+
+	<resultMap type="Major" id="MajorMap">
+		<id property="majorId" column="major_id"/>
+		<result property="majorName" column="major_name"/>
+		<result property="majorEnglish" column="major_english"/>
+		<result property="majorStatus" column="major_status"/>
+		<result property="majorDetail" column="major_detail"/>
+		<result property="majorSort" column="major_sort"/>
+	</resultMap>
+
+	<select id="queryAll" resultMap="MajorMap">
+		select *
+		from tbl_major
+		<where>
+			<if test="null!=status and status!=-1">major_status=#{status}</if>
+		</where>
+	</select>
+	<select id="queryById" resultMap="MajorMap">
+		select *
+		from tbl_major
+		where major_id=#{id}
+	</select>
+	<select id="queryByName" resultMap="MajorMap">
+		select *
+		from tbl_major
+		where major_name=#{name}
+	</select>
+	<insert id="save" useGeneratedKeys="true" keyProperty="majorId">
+		insert into tbl_major
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=majorName">major_name,</if>
+			<if test="null!=majorEnglish">major_english,</if>
+			<if test="null!=majorStatus">major_status,</if>
+			<if test="null!=majorDetail">major_detail,</if>
+			<if test="null!=majorSort">major_sort,</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=majorName">#{majorName},</if>
+			<if test="null!=majorEnglish">#{majorEnglish},</if>
+			<if test="null!=majorStatus">#{majorStatus},</if>
+			<if test="null!=majorDetail">#{majorDetail},</if>
+			<if test="null!=majorSort">#{majorSort},</if>
+		</trim>
+	</insert>
+	<update id="update">
+		update tbl_major
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=majorName">major_name=#{majorName},</if>
+			<if test="null!=majorEnglish">major_english=#{majorEnglish},</if>
+			<if test="null!=majorStatus">major_status=#{majorStatus},</if>
+			<if test="null!=majorDetail">major_detail=#{majorDetail},</if>
+			<if test="null!=majorSort">major_sort=#{majorSort},</if>
+		</trim>
+		where major_id=#{majorId}
+	</update>
+	<delete id="delete">
+		delete from tbl_major
+		where major_id=#{id}
+	</delete>
+</mapper>

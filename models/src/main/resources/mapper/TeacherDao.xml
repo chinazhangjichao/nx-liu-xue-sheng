@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.TeacherDao">
+
+	<resultMap type="Teacher" id="TeacherMap">
+		<id property="id" column="id"/>
+		<result property="no" column="no"/>
+		<result property="realName" column="real_name"/>
+		<result property="headImg" column="head_img"/>
+		<result property="duty" column="duty"/>
+		<result property="major" column="major"/>
+		<result property="email" column="email"/>
+		<result property="description" column="description"/>
+		<result property="detail" column="detail"/>
+		<result property="sortNum" column="sort_num"/>
+		<result property="status" column="status"/>
+		<result property="modifyTime" column="modify_time"/>
+		<association property="modifyUser" column="modify_user" javaType="SysUser">
+			<id property="userId" column="modify_user" />
+			<result property="realName" column="user_name" />
+		</association>
+	</resultMap>
+
+	<sql id="select">
+		select t.*,u.real_name user_name
+		from tbl_teacher t
+		inner join sys_user u on t.modify_user = u.user_id
+	</sql>
+	<select id="queryByPage" resultMap="TeacherMap">
+		<include refid="select"></include>
+		<where>
+			<if test="null!=status and status!=-1"> and status=#{status}</if>
+			<if test="null!=name and name!=''"> and t.real_name like CONCAT('%',#{name},'%')</if>
+		</where>
+		order by sort_num
+	</select>
+	<select id="queryCount" resultType="int">
+		select count(1)
+		from tbl_teacher t
+		inner join sys_user u on t.modify_user = u.user_id
+		<where>
+			<if test="null!=status and status!=-1"> and status=#{status}</if>
+			<if test="null!=name and name!=''"> and t.real_name like CONCAT('%',#{name},'%')</if>
+		</where>
+	</select>
+	<select id="queryById" resultMap="TeacherMap">
+		<include refid="select"></include>
+		where id=#{id}
+	</select>
+
+	<insert id="save" useGeneratedKeys="true" keyProperty="id">
+		insert into tbl_teacher
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=no">no,</if>
+			<if test="null!=realName">real_name,</if>
+			<if test="null!=headImg">head_img,</if>
+			<if test="null!=duty">duty,</if>
+			<if test="null!=major">major,</if>
+			<if test="null!=email">email,</if>
+			<if test="null!=description">description,</if>
+			<if test="null!=detail">detail,</if>
+			<if test="null!=status">status,</if>
+			<if test="null!=sortNum">sort_num,</if>
+			<if test="null!=modifyUser">modify_user,</if>
+			<if test="null!=modifyTime">modify_time,</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=no">#{no},</if>
+			<if test="null!=realName">#{realName},</if>
+			<if test="null!=headImg">#{headImg},</if>
+			<if test="null!=duty">#{duty},</if>
+			<if test="null!=major">#{major},</if>
+			<if test="null!=email">#{email},</if>
+			<if test="null!=description">#{description},</if>
+			<if test="null!=detail">#{detail},</if>
+			<if test="null!=status">#{status},</if>
+			<if test="null!=sortNum">#{sortNum},</if>
+			<if test="null!=modifyUser">#{modifyUser.userId},</if>
+			<if test="null!=modifyTime">#{modifyTime},</if>
+		</trim>
+	</insert>
+	<update id="update">
+		update tbl_teacher
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=realName">real_name=#{realName},</if>
+			<if test="null!=headImg">head_img=#{headImg},</if>
+			<if test="null!=duty">duty=#{duty},</if>
+			<if test="null!=major">major=#{major},</if>
+			<if test="null!=email">email=#{email},</if>
+			<if test="null!=description">description=#{description},</if>
+			<if test="null!=detail">detail=#{detail},</if>
+			<if test="null!=status">status=#{status},</if>
+			<if test="null!=sortNum">sort_num=#{sortNum},</if>
+			<if test="null!=modifyUser">modify_user=#{modifyUser.userId},</if>
+			<if test="null!=modifyTime">modify_time=#{modifyTime},</if>
+		</trim>
+		where id=#{id}
+	</update>
+	<delete id="delete">
+		delete from tbl_teacher
+		where id=#{id}
+	</delete>
+</mapper>

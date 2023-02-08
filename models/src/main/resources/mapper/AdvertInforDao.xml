@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.AdvertInforDao">
+	<resultMap type="AdvertInfor" id="AdvertInforMap">
+		<id property="advertId" column="advert_id" />
+		<result property="sortNum" column="sort_num" />
+		<result property="advertName" column="advert_name" />
+		<result property="advertImg" column="advert_img" />
+		<result property="advertUrl" column="advert_url" />
+		<result property="isOnline" column="is_online" />
+		<result property="modifyTime" column="modify_time" />
+		<result property="modifyUser" column="modify_user" />
+		<association property="advertType" column="advert_type" javaType="AdvertType">
+			<id property="typeId" column="type_id" />
+			<result property="typeName" column="type_name" />
+		</association>
+	</resultMap>
+	
+	<sql id="select">
+		select *
+		from tbl_advert_infor ai
+		inner join tbl_advert_type  at on ai.advert_type=at.type_id
+	</sql>
+
+	<select id="queryByPage" resultMap="AdvertInforMap">
+		<include refid="select"></include>
+		<trim prefix="where" prefixOverrides="and">
+			<if test="null!=type  and type>0"> and advert_type=#{type} </if>
+			<if test="null!=online and online!=-1"> and is_online=#{online} </if>
+			<if test="null!=keyword and ''!=keyword">
+				and ai.advert_name like CONCAT('%',#{keyword},'%')
+			</if>
+		</trim>
+		order by sort_num DESC, advert_id DESC
+		limit #{start},#{size}
+	</select>
+
+	<select id="queryCount" resultType="int">
+		select count(advert_id)
+		from tbl_advert_infor ai
+		inner join tbl_advert_type  at on ai.advert_type=at.type_id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="null!=type  and type>0"> and advert_type=#{type} </if>
+			<if test="null!=online and online!=-1"> and is_online=#{online} </if>
+			<if test="null!=keyword and ''!=keyword">
+				and ai.advert_name like CONCAT('%',#{keyword},'%')
+			</if>
+		</trim>
+	</select>
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="AdvertInforMap">
+		<include refid="select"></include>
+		where advert_id=#{id}
+	</select>
+	<!-- 保存 -->
+	<insert id="save">
+		insert into tbl_advert_infor
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=advertName"> advert_name, </if>
+			<if test="null!=advertImg"> advert_img, </if>
+			<if test="null!=advertUrl"> advert_url, </if>
+			<if test="null!=advertType"> advert_type, </if>
+			<if test="null!=isOnline"> is_online, </if>
+			<if test="null!=sortNum"> sort_num, </if>
+			<if test="null!=modifyUser"> modify_user , </if>
+			<if test="null!=modifyTime"> modify_time, </if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=advertName">#{advertName}, </if>
+			<if test="null!=advertImg">#{advertImg}, </if>
+			<if test="null!=advertUrl">#{advertUrl}, </if>
+			<if test="null!=advertType">#{advertType.typeId}, </if>
+			<if test="null!=isOnline">#{isOnline}, </if>
+			<if test="null!=sortNum">#{sortNum}, </if>
+			<if test="null!=modifyUser">#{modifyUser} , </if>
+			<if test="null!=modifyTime">#{modifyTime}, </if>
+		</trim>
+	</insert>
+	<!-- 修改 -->
+	<update id="update">
+		update tbl_advert_infor
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=advertName"> advert_name=#{advertName}, </if>
+			<if test="null!=advertImg"> advert_img=#{advertImg}, </if>
+			<if test="null!=advertUrl"> advert_url=#{advertUrl}, </if>
+			<if test="null!=advertType"> advert_type=#{advertType.typeId}, </if>
+			<if test="null!=isOnline"> is_online=#{isOnline}, </if>
+			<if test="null!=sortNum"> sort_num=#{sortNum}, </if>
+			<if test="null!=modifyUser"> modify_user=#{modifyUser} , </if>
+			<if test="null!=modifyTime"> modify_time=#{modifyTime}, </if>
+		</trim>
+		where advert_id=#{advertId}
+	</update>
+	<!-- 删除 -->
+	<delete id="delete">
+		delete from tbl_advert_infor
+		where advert_id=#{id}
+	</delete>
+	<delete id="deleteMulti">
+		delete from tbl_advert_infor
+		where advert_id in
+		<foreach collection="ids" item="id" open="(" close=")" separator=",">#{id}</foreach>
+	</delete>
+</mapper>

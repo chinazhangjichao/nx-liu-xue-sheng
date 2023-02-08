@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.ArticleInforDao">
+	<resultMap type="ArticleInfor" id="ArticleInforMap">
+		<id property="articleId" column="article_id" />
+		<result property="sortNum" column="sort_num" />
+		<result property="articleTitle" column="article_title" />
+		<result property="articleImg" column="article_img" />
+		<result property="articleTag" column="article_tag" />
+		<result property="articleDesc" column="article_desc" />
+		<result property="articleDetail" column="article_detail" />
+		<result property="readNum" column="read_num" />
+		<result property="isTop" column="is_top" />
+		<result property="isCommand" column="is_command" />
+		<result property="isOnline" column="is_online" />
+		<result property="isEn" column="is_en" />
+		<result property="sendUser" column="send_user" />
+		<result property="sendDate" column="send_date" />
+		<result property="modifyTime" column="modify_time" />
+		<association property="modifyUser" column="modify_user" javaType="SysUser">
+			<id property="userId" column="modify_user" />
+			<result property="realName" column="real_name" />
+		</association>
+		<association property="articleType" column="article_type" javaType="ArticleType">
+			<id property="typeId" column="type_id" />
+			<result property="typeName" column="type_name" />
+			<result property="typeEnglish" column="type_english" />
+			<association property="typeParent" column="type_parent" javaType="ArticleType">
+				<id property="typeId" column="parent_id" />
+				<result property="typeName" column="parent_name" />
+				<result property="typeEnglish" column="parent_english" />
+			</association>
+		</association>
+	</resultMap>
+
+	<sql id="select">
+		select a.*,at.type_id,at.type_name,at.type_english,pt.type_id parent_id,pt.type_name parent_name,pt.type_english parent_english,u.real_name
+		from tbl_article_infor a
+		inner join sys_user u on a.modify_user=u.user_id
+		inner join tbl_article_type at on a.article_type=at.type_id
+		LEFT join tbl_article_type pt on at.type_parent=pt.type_id
+	</sql>
+
+	<select id="queryByPage" resultMap="ArticleInforMap">
+		<include refid="select"></include>
+		<trim prefix="where" prefixOverrides="and">
+			<if test="null!=typeNo and typeNo>0">
+				and at.type_no  LIKE CONCAT(#{typeNo},'%')
+			</if>
+			<if test="null!=keyword and ''!=keyword">
+				and (a.article_title like CONCAT('%',#{keyword},'%') or a.article_tag like CONCAT('%',#{keyword},'%'))
+			</if>
+		</trim>
+		order by sort_num DESC,article_id DESC
+		limit #{start},#{size}
+	</select>
+
+	<select id="queryCount" resultType="int">
+		select count(article_id)
+		from tbl_article_infor a
+		inner join sys_user u on a.modify_user=u.user_id
+		inner join tbl_article_type at on a.article_type=at.type_id
+		LEFT join tbl_article_type pt on at.type_parent=pt.type_id
+		<trim prefix="where" prefixOverrides="and">
+			<if test="null!=typeNo and typeNo>0">
+				and at.type_no  LIKE CONCAT(#{typeNo},'%')
+			</if>
+			<if test="null!=keyword and ''!=keyword">
+				and (a.article_title like CONCAT('%',#{keyword},'%') or a.article_tag like CONCAT('%',#{keyword},'%'))
+			</if>
+		</trim>
+	</select>
+	<select id="queryByPage4UI" resultMap="ArticleInforMap">
+		<include refid="select"></include>
+		<trim prefix="where" prefixOverrides="and">
+			is_online=1
+			<if test="null!=type and type>0">
+				<choose>
+					<when test="child==1">and at.type_no like CONCAT(#{type},'%')</when>
+					<otherwise>and a.article_type=#{type}</otherwise>
+				</choose>
+			</if>
+			<if test="null!=top">and a.is_top=#{top}</if>
+			<if test="null!=command">and a.is_command=#{command}</if>
+			<if test="null!=keyword and ''!=keyword">
+				and (a.article_title like CONCAT('%',#{keyword},'%') or a.article_tag like CONCAT('%',#{keyword},'%'))
+			</if>
+		</trim>
+		order by sort_num DESC,article_id DESC
+		limit #{start},#{size}
+	</select>
+
+	<select id="queryCount4UI" resultType="int">
+		select count(article_id)
+		from tbl_article_infor a
+		inner join sys_user u on a.modify_user=u.user_id
+		inner join tbl_article_type at on a.article_type=at.type_id
+		LEFT join tbl_article_type pt on at.type_parent=pt.type_id
+		<trim prefix="where" prefixOverrides="and">
+			is_online=1
+			<if test="null!=type and type>0">
+				<choose>
+					<when test="child==1">and at.type_no like CONCAT(#{type},'%')</when>
+					<otherwise>and a.article_type=#{type}</otherwise>
+				</choose>
+			</if>
+			<if test="null!=top">and a.is_top=#{top}</if>
+			<if test="null!=command">and a.is_command=#{command}</if>
+			<if test="null!=keyword and ''!=keyword">
+				and (a.article_title like CONCAT('%',#{keyword},'%') or a.article_tag like CONCAT('%',#{keyword},'%'))
+			</if>
+		</trim>
+	</select>
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="ArticleInforMap">
+		<include refid="select"></include>
+		where article_id=#{id}
+	</select>
+
+	<!-- 保存 -->
+	<insert id="save" useGeneratedKeys="true" keyProperty="articleId">
+		insert into tbl_article_infor
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=sortNum">sort_num,</if>
+			<if test="null!=articleTitle">article_title,</if>
+			<if test="null!=articleImg">article_img,</if>
+			<if test="null!=articleTag">article_tag,</if>
+			<if test="null!=articleDesc">article_desc,</if>
+			<if test="null!=articleDetail">article_detail,</if>
+			<if test="null!=readNum">read_num,</if>
+			<if test="null!=articleType">article_type,</if>
+			<if test="null!=isTop">is_top,</if>
+			<if test="null!=isCommand">is_command,</if>
+			<if test="null!=isOnline">is_online,</if>
+			<if test="null!=isEn">is_en,</if>
+			<if test="null!=sendUser">send_user ,</if>
+			<if test="null!=sendDate">send_date,</if>
+			<if test="null!=modifyUser">modify_user,</if>
+			<if test="null!=modifyTime">modify_time,</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=sortNum">#{sortNum},</if>
+			<if test="null!=articleTitle">#{articleTitle},</if>
+			<if test="null!=articleImg">#{articleImg},</if>
+			<if test="null!=articleTag">#{articleTag},</if>
+			<if test="null!=articleDesc">#{articleDesc},</if>
+			<if test="null!=articleDetail">#{articleDetail},</if>
+			<if test="null!=readNum">#{readNum},</if>
+			<if test="null!=articleType">#{articleType.typeId},</if>
+			<if test="null!=isTop">#{isTop},</if>
+			<if test="null!=isCommand">#{isCommand},</if>
+			<if test="null!=isOnline">#{isOnline},</if>
+			<if test="null!=isEn">#{isEn},</if>
+			<if test="null!=sendUser">#{sendUser} ,</if>
+			<if test="null!=sendDate">#{sendDate},</if>
+			<if test="null!=modifyUser">#{modifyUser.userId},</if>
+			<if test="null!=modifyTime">#{modifyTime},</if>
+		</trim>
+	</insert>
+	<!-- 修改 -->
+	<update id="update">
+		update tbl_article_infor
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=sortNum">sort_num=#{sortNum},</if>
+			<if test="null!=articleTitle">article_title=#{articleTitle},</if>
+			<if test="null!=articleImg">article_img=#{articleImg},</if>
+			<if test="null!=articleTag">article_tag=#{articleTag},</if>
+			<if test="null!=articleDesc">article_desc=#{articleDesc},</if>
+			<if test="null!=articleDetail">article_detail=#{articleDetail},</if>
+			<if test="null!=readNum">read_num=#{readNum},</if>
+			<if test="null!=articleType">article_type=#{articleType.typeId},</if>
+			<if test="null!=isTop">is_top=#{isTop},</if>
+			<if test="null!=isCommand">is_command=#{isCommand},</if>
+			<if test="null!=isOnline">is_online=#{isOnline},</if>
+			<if test="null!=isEn">is_en=#{isEn},</if>
+			<if test="null!=sendUser">send_user=#{sendUser} ,</if>
+			<if test="null!=sendDate">send_date=#{sendDate},</if>
+			<if test="null!=modifyUser">modify_user=#{modifyUser.userId} ,</if>
+			<if test="null!=modifyTime">modify_time=#{modifyTime},</if>
+		</trim>
+		where article_id=#{articleId}
+	</update>
+	<!-- 删除 -->
+	<delete id="delete">
+		delete from tbl_article_infor
+		where article_id=#{id}
+	</delete>
+	<delete id="deleteMulti">
+		delete from tbl_article_infor
+		where article_id in
+		<foreach collection="ids" item="id" open="(" close=")" separator=",">#{id}</foreach>
+	</delete>
+</mapper>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.ArticleFileDao">
+	<resultMap type="ArticleFile" id="ArticleFileMap">
+		<id property="id" column="id" />
+		<result property="article" column="article" />
+		<result property="no" column="no" />
+		<result property="name" column="name" />
+		<result property="size" column="size" />
+		<result property="type" column="type" />
+		<result property="url" column="url" />
+		<result property="createTime" column="create_time" />
+		<association property="createUser" column="create_user" javaType="SysUser">
+			<id property="userId" column="user_id" />
+			<result property="realName" column="real_name" />
+		</association>
+	</resultMap>
+
+	<sql id="select">
+		select a.*,u.user_id,u.real_name
+		from tbl_article_file a
+		inner join sys_user u on a.create_user=u.user_id
+	</sql>
+
+	<select id="queryByArticle" resultMap="ArticleFileMap">
+		<include refid="select"></include>
+		where `article`=#{articleId}
+	</select>
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="ArticleFileMap">
+		<include refid="select"></include>
+		where `id`=#{id}
+	</select>
+	<select id="queryByNo" resultMap="ArticleFileMap">
+		<include refid="select"></include>
+		where `no`=#{no}
+	</select>
+
+	<!-- 保存 -->
+	<insert id="save">
+		insert into tbl_article_file
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=no">`no`,</if>
+			<if test="null!=article">`article`,</if>
+			<if test="null!=name">`name`,</if>
+			<if test="null!=size">`size`,</if>
+			<if test="null!=type">`type`,</if>
+			<if test="null!=url">`url`,</if>
+			<if test="null!=createTime">create_time,</if>
+			<if test="null!=createUser">create_user,</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null!=no">#{no},</if>
+			<if test="null!=article">#{article},</if>
+			<if test="null!=name">#{name},</if>
+			<if test="null!=size">#{size},</if>
+			<if test="null!=type">#{type},</if>
+			<if test="null!=url">#{url},</if>
+			<if test="null!=createTime">#{createTime},</if>
+			<if test="null!=createUser">#{createUser.userId},</if>
+		</trim>
+	</insert>
+	<insert id="saveList">
+		insert into tbl_article_file(`no`,`name`,`size`,`type`,`url`,`article`,create_time,create_user)
+		VALUES
+		<foreach collection="objList" item="obj" separator=",">
+			(#{obj.no},#{obj.name},#{obj.size},#{obj.type},#{obj.url},#{obj.article},#{obj.createTime},#{obj.createUser.userId})
+		</foreach>
+	</insert>
+	<!-- 删除 -->
+	<delete id="delete">
+		delete from tbl_article_file
+		where `no`=#{no}
+	</delete>
+	<delete id="deleteByArticle">
+		delete from tbl_article_file
+		where `article` #{articleId}
+	</delete>
+	<delete id="deleteMultiByArticle">
+		delete from tbl_article_infor
+		where `article` in
+		<foreach collection="ids" item="id" open="(" close=")" separator=",">#{id}</foreach>
+	</delete>
+</mapper>

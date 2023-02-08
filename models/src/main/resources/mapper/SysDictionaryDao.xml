@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.zjc.app.dao.SysDictionaryDao">
+
+	<resultMap type="SysDictionary" id="SysDictionaryMap">
+		<id property="dicId" column="dic_id" />
+		<result property="dicKey" column="dic_key" />
+		<result property="dicValue" column="dic_value" />
+		<result property="dicRemark" column="dic_remark" />
+	</resultMap>
+
+
+	<select id="queryAll" resultMap="SysDictionaryMap">
+		select * from sys_dictionary
+	</select>
+	<select id="queryByKey" resultMap="SysDictionaryMap">
+		select * from sys_dictionary where dic_key=#{key}
+	</select>
+	<select id="queryById" resultMap="SysDictionaryMap">
+		select * from sys_dictionary where dic_id=#{id}
+	</select>
+	<insert id="save">
+		INSERT into sys_dictionary(dic_key,dic_value,dic_desc) VALUES (#{dicKey},#{dicValue},#{dicDesc})
+	</insert>
+	<update id="update">
+		update sys_dictionary
+		<trim prefix="set" suffixOverrides=",">
+			<if test="null!=dicValue">dic_value=#{dicValue},</if>
+			<if test="null!=dicKey">dic_key=#{dicKey},</if>
+			<if test="null!=dicDesc">dic_desc=#{dicDesc},</if>
+		</trim>
+		where dic_id=#{dicId}
+	</update>
+	<delete id="delete">
+		delete from sys_dictionary where dic_id=#{dicId}
+	</delete>
+</mapper>
